@@ -3,6 +3,16 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# data and output files
+*.npy
+*.npz
+*.csv
+*.jsonl
+*.parquet
+embeddings/
+checkpoints/
+cache/
+
 # C extensions
 *.so
 
