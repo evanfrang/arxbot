@@ -12,6 +12,8 @@ __pycache__/
 embeddings/
 checkpoints/
 cache/
+chroma_db/
+.env
 
 # C extensions
 *.so

@@ -1,11 +1,30 @@
 import os
 from sentence_transformers import SentenceTransformer
 import numpy as np
+from transformers import AutoTokenizer, AutoModel
+import torch
+
+class Specter2Embedder:
+    def __init__(self, model_name="allenai/specter2_base"):
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        self.model = AutoModel.from_pretrained(model_name)
+
+    def encode(self, texts):
+        with torch.no_grad():
+            inputs = self.tokenizer(texts, 
+                padding=True, 
+                truncation=True,
+                max_length=512, 
+                return_tensors="pt"
+            )
+            outputs = self.model(**inputs)
+            embeddings = outputs.last_hidden_state[:, 0, :]  # CLS token
+            return embeddings.cpu().numpy()
 
 # Load model once, use GPU if available
-model = SentenceTransformer('all-MiniLM-L6-v2', device='cuda')  # 'cuda' uses your GPU
+model = SentenceTransformer('BAAI/bge-base-en-v1.5', device='cuda')  # 'cuda' uses your GPU
 
-def embed_texts_chunked(texts, save_dir='embeddings', chunk_size=500, batch_size=16):
+def embed_texts_chunked(texts, save_dir='embeddings', chunk_size=50, batch_size=16):
     """
     Embed texts in chunks and save embeddings incrementally to disk.
 
@@ -23,6 +42,8 @@ def embed_texts_chunked(texts, save_dir='embeddings', chunk_size=500, batch_size
     total = len(texts)
     num_chunks = (total + chunk_size - 1) // chunk_size
 
+    embedder = Specter2Embedder()
+    
     for chunk_idx in range(num_chunks):
         chunk_path = os.path.join(save_dir, f'embeddings_chunk_{chunk_idx}.npy')
         if os.path.exists(chunk_path):
@@ -34,7 +55,17 @@ def embed_texts_chunked(texts, save_dir='embeddings', chunk_size=500, batch_size
         chunk_texts = texts[start:end]
 
         print(f"Embedding chunk {chunk_idx + 1}/{num_chunks}, texts {start} to {end}...")
-        embeddings = model.encode(chunk_texts, batch_size=batch_size, show_progress_bar=True, convert_to_numpy=True)
+        #embeddings = model.encode(chunk_texts, batch_size=batch_size, show_progress_bar=True, convert_to_numpy=True)
+        
+        texts_to_embed = [
+            str((item.get('title', '') + " " + item.get('abstract', '')).strip())
+            for item in chunk_texts
+        ]
+        max_len = max(len(t) for t in texts_to_embed)
+        
+        print(f"Max text length in chunk {chunk_idx}: {max_len}")
+        embeddings = embedder.encode(texts_to_embed) 
+        embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
 
         np.save(chunk_path, embeddings)
         print(f"Saved chunk {chunk_idx} embeddings to {chunk_path}")
