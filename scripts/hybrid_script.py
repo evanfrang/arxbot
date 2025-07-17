@@ -6,22 +6,28 @@ nltk.download("punkt_tab")
 from arxbot.retriever import ArxbotRetriever
 from arxbot.hybrid_search import hybrid_query
 
-df = pd.read_parquet("data/arxiv_HEP_grav.parquet")
+def main():
+    df = pd.read_parquet("data/arxiv_HEP_grav.parquet")
 
-corpus = df["title"].fillna("") + " " + df["abstract"].fillna("")
-tokenized_corpus = [nltk.word_tokenize(text) for text in corpus]
-bm25 = BM25Okapi(tokenized_corpus)
+    corpus = df["title"].fillna("") + " " + df["abstract"].fillna("")
+    tokenized_corpus = [nltk.word_tokenize(text) for text in corpus]
+    bm25 = BM25Okapi(tokenized_corpus)
 
-title_to_index = {t: i for i, t in enumerate(df["title"])}
+    title_to_index = {
+        str(t).strip().lower(): i for i, t in enumerate(df["title"])
+    }
 
-retriever = ArxbotRetriever()
+    retriever = ArxbotRetriever()
 
-# Query
-query = "Heavy Vectors in Higgs-less models"
-results = hybrid_query(query, retriever, bm25, df, title_to_index, alpha=0.99)
+    # Query
+    query = "Heavy Vectors in Higgs-less models"
+    results = hybrid_query(query, retriever, bm25, df, title_to_index, alpha=0.5)
 
-# Print results
-for r in results:
-    print(f"Title: {r['metadata']['title']}")
-    print(f"Score: {r['score']:.4f}")
-    print("---")
+    # Print results
+    for r in results:
+        print(f"Title: {r['metadata']['title']}")
+        print(f"Score: {r['score']:.4f}")
+        print("---")
+
+if __name__ == '__main__':
+    main()
