@@ -3,14 +3,40 @@ from rank_bm25 import BM25Okapi
 import nltk
 nltk.download("punkt")
 nltk.download("punkt_tab")
+from sklearn.preprocessing import minmax_scale
 from arxbot.retriever import ArxbotRetriever
 from arxbot.hybrid_search import hybrid_query
+import matplotlib.pyplot as plt
+import umap
+import numpy as np
+
+
+def plot_embeddings(doc_embeddings, query_embedding, titles, top_k_indices, alpha):
+    all_embeddings = np.vstack([doc_embeddings, query_embedding])
+    reducer = umap.UMAP(n_neighbors=15, min_dist=0.1, random_state=42)
+    embeddings_2d = reducer.fit_transform(all_embeddings)
+
+    plt.figure(figsize=(10, 8))
+    plt.scatter(embeddings_2d[:-1, 0], embeddings_2d[:-1, 1], alpha=0.4, label="Corpus")
+
+    # Highlight top-k
+    if top_k_indices is not None:
+        top_k_points = embeddings_2d[top_k_indices]
+        plt.scatter(top_k_points[:, 0], top_k_points[:, 1], color="orange", label="Top-K")
+
+    # Plot query
+    query_point = embeddings_2d[-1]
+    plt.scatter(query_point[0], query_point[1], color='red', label='Query', marker='x', s=100)
+
+    plt.legend()
+    plt.title("UMAP of Specter Embeddings + Query")
+    plt.savefig(f"results/umap_web_{alpha}.png")
 
 def main():
     df = pd.read_parquet("data/arxiv_HEP_grav.parquet")
 
     corpus = df["title"].fillna("") + " " + df["abstract"].fillna("")
-    tokenized_corpus = [nltk.word_tokenize(text) for text in corpus]
+    tokenized_corpus = [nltk.word_tokenize(text.lower()) for text in corpus]
     bm25 = BM25Okapi(tokenized_corpus)
 
     title_to_index = {
@@ -20,14 +46,24 @@ def main():
     retriever = ArxbotRetriever()
 
     # Query
-    query = "Heavy Vectors in Higgs-less models"
-    results = hybrid_query(query, retriever, bm25, df, title_to_index, alpha=0.5)
+    query = "Medieval Japanese poetry and imperial court politics".lower()
+    ALPHA = 1.0
+    results = hybrid_query(query, retriever, bm25, df, title_to_index, alpha=ALPHA)
 
     # Print results
     for r in results:
         print(f"Title: {r['metadata']['title']}")
         print(f"Score: {r['score']:.4f}")
         print("---")
+
+    doc_embeddings, ids, metadatas = retriever.get_all_embeddings()
+    query_embedding = np.array(retriever.embed_query(query)).reshape(1, -1)
+
+    # Get indices of returned docs (match title to df)
+    top_titles = [r['metadata']['title'].strip().lower() for r in results]
+    top_k_indices = [title_to_index.get(t) for t in top_titles if title_to_index.get(t) is not None]
+
+    plot_embeddings(doc_embeddings, query_embedding, df["title"], top_k_indices, ALPHA)
 
 if __name__ == '__main__':
     main()

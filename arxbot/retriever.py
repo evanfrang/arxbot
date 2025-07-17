@@ -1,7 +1,7 @@
 import chromadb
 from sentence_transformers import SentenceTransformer
 from arxbot.embedding import Specter2Embedder
-
+import numpy as np
 
 
 class ArxbotRetriever:
@@ -42,3 +42,16 @@ class ArxbotRetriever:
             include=["documents", "metadatas", "distances"],
         )
         return results
+
+    def get_all_embeddings(self):
+        """
+        Returns:
+            embeddings: np.ndarray of shape (N, D)
+            ids: list of document IDs
+            metadatas: list of metadata dictionaries
+        """
+        results = self.collection.get(include=["embeddings", "metadatas"])
+        embeddings = np.array(results["embeddings"])
+        ids = results["ids"]
+        metadatas = results["metadatas"]
+        return embeddings, ids, metadatas

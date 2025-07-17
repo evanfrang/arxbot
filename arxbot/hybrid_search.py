@@ -18,6 +18,7 @@ def hybrid_query(query, retriever, bm25, df, title_to_index, top_k=5, alpha=0.5)
     for i, (meta, score) in enumerate(zip(vector_metas, vector_scores)):
         title = meta.get("title", "").strip().lower()
         idx = title_to_index.get(title)
+
         if idx is None:
             print(f"Title not found in title_to_index: '{title}'")
             continue
@@ -25,5 +26,5 @@ def hybrid_query(query, retriever, bm25, df, title_to_index, top_k=5, alpha=0.5)
         hybrid_score = alpha * score + (1 - alpha) * bm25_score
         hybrid_results.append((hybrid_score, vector_docs[i], meta))
     
-    top = sorted(hybrid_results, reverse=True)[:top_k]
+    top = sorted(hybrid_results, key=lambda x: x[0], reverse=True)[:top_k]
     return [{"score": s, "document": d, "metadata": m} for s, d, m in top]

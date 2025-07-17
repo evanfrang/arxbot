@@ -22,7 +22,7 @@ class Specter2Embedder:
             return embeddings.cpu().numpy()
 
 # Load model once, use GPU if available
-model = SentenceTransformer('BAAI/bge-base-en-v1.5', device='cuda')  # 'cuda' uses your GPU
+#model = SentenceTransformer('BAAI/bge-base-en-v1.5', device='cuda')  # 'cuda' uses your GPU
 
 def embed_texts_chunked(texts, save_dir='embeddings', chunk_size=50, batch_size=16):
     """
