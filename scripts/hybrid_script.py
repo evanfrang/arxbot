@@ -48,7 +48,7 @@ def main():
     query = "AdS black hole background. The quantum fields modeling the Hawking".lower()
     dense_results = get_top_dense_results(query, retriever)
     bm25_results = get_top_bm25_results(query, df, bm25)
-    results, ranks = rrf_fuse(bm25_results, dense_results, df)
+    results = rrf_fuse(bm25_results, dense_results, df)
 
     # Print results
     for r in results:
@@ -66,7 +66,6 @@ def main():
         print(f"meta: {r['metadata']}")
         print("---")
 
-    print(ranks)
 
     doc_embeddings, ids, metadatas = retriever.get_all_embeddings()
     query_embedding = np.array(retriever.embed_query(query)).reshape(1, -1)

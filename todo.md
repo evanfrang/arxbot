@@ -4,5 +4,5 @@
 
 # Next Steps
 
-- [ ] Evaluate other models: BGE, MiniLM
-- [ ] Plot score distributions
+- [ ] Just move forward with bm25
+- [ ] Augmentation

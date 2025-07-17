@@ -61,7 +61,7 @@ def rrf_fuse(bm25_results, dense_results, df, k=60, limit=5):
             if doc_idx is None:
                 continue
             rrf_scores[doc_idx] += 1 / (k + rank)
-            rrf_ranks[doc_idx] = rank
+            #rrf_ranks[doc_idx] = rank
 
     # Sort descending by RRF score
     sorted_docs = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)[:limit]
@@ -74,4 +74,4 @@ def rrf_fuse(bm25_results, dense_results, df, k=60, limit=5):
             "metadata": metadata
         })
 
-    return fused_results, rrf_ranks
+    return fused_results
