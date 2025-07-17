@@ -51,6 +51,8 @@ class ArxbotRetriever:
             metadatas: list of metadata dictionaries
         """
         results = self.collection.get(include=["embeddings", "metadatas"])
+        #print("First vector:", results["embeddings"][0][:10])  # first 10 dims
+        #print("Length of vector:", len(results["embeddings"][0]))
         embeddings = np.array(results["embeddings"])
         ids = results["ids"]
         metadatas = results["metadatas"]

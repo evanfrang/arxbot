@@ -18,7 +18,7 @@ def load_embeddings_chunks(emb_dir='embeddings'):
         all_embeddings.append(emb)
     return np.vstack(all_embeddings)
 
-def add_in_batches(collection, embeddings, documents, metadatas, batch_size=5000):
+def add_in_batches(collection, embeddings, documents, metadatas, ids, batch_size=5000):
     total = len(embeddings)
     for start_idx in range(0, total, batch_size):
         end_idx = min(start_idx + batch_size, total)
@@ -27,8 +27,8 @@ def add_in_batches(collection, embeddings, documents, metadatas, batch_size=5000
             embeddings=embeddings[start_idx:end_idx].tolist(),
             documents=documents[start_idx:end_idx],
             metadatas=metadatas[start_idx:end_idx],
-            ids=[f"doc_{i}" for i in range(start_idx, end_idx)]
-)
+            ids=ids[start_idx:end_idx]
+        )
 
 def build_chroma_index(
     metadata_parquet='data/arxiv_HEP_grav.parquet',
@@ -50,7 +50,12 @@ def build_chroma_index(
     client = chromadb.PersistentClient(path="chroma_db")
 
     # Create or get the collection
-    collection = client.get_or_create_collection(name=collection_name)
+    collection = client.get_or_create_collection(
+        name=collection_name,
+        metadata={"hnsw:space": "cosine"}
+    )
+
+    ids = [f"doc_{i}" for i in range(len(df))]
 
     # Insert documents
     print("Adding documents to ChromaDB...")
@@ -59,6 +64,7 @@ def build_chroma_index(
         embeddings,
         df['abstract'].tolist(),
         df.to_dict(orient='records'),
+        ids=ids,
         batch_size=5000
     )
 
