@@ -12,9 +12,10 @@ Physics and Gravity to answer questions.
 ### Search
 
 I wanted to use a hybrid search system which combines the best of
-semantic search and vector search. I couldn’t get the vector search
-(Specter 2) to work well on titles and abstracts so I am currently just
-using BM25 for semantic search.
+lexical search (exact matches) and vector search (semantic
+i.e. meanings). I couldn’t get the vector search (Specter 2) to work
+well on titles and abstracts so I am currently just using BM25 for
+semantic search.
 
 ### LLM model
 
