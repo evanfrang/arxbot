@@ -70,3 +70,6 @@ Ollama:
 These studies demonstrate that Hawking radiation has been explored in various systems beyond Jackiw-Teitelboim gravity.
 ```
 
+## Conclusion
+
+This isn't better or worse but it is more specific when given context.

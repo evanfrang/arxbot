@@ -58,3 +58,7 @@ And now for the adding context using my RAG pipeline:
     3. Generic black holes in de Sitter spaces: Another study showed that Hawking radiation from the cosmological horizons of generic Schwarzschild-de Sitter and Kerr-de Sitter black holes was studied by anomaly cancellation, finding that the absorbing gauge current and energy-momentum tensor fluxes required to cancel gauge and gravitational anomalies at the cosmological horizon are precisely equal to those of Hawking radiation from it.
 
     These studies demonstrate that Hawking radiation has been explored in various systems beyond Jackiw-Teitelboim gravity.
+
+## Conclusion
+
+This isn’t better or worse but it is more specific when given context.
